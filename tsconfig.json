@@ -1,0 +1,44 @@
+{
+	"compilerOptions": {
+      "jsx": "react",
+      "noEmitOnError": true,
+      "newLine": "lf",
+      "removeComments": true,
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "strictBindCallApply": true,
+      "strictPropertyInitialization": true,
+      "noImplicitThis": true,
+      "alwaysStrict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "stripInternal": false,
+      "target": "ES5",
+		"module": "ESNext",
+		"lib": [
+			"dom",
+			"dom.iterable",
+			"esnext"
+		],
+		"declaration": false,
+		"isolatedModules": true,
+		"useDefineForClassFields": true,
+		"skipLibCheck": true
+	},
+	"include": [
+		"source",
+		"webpack.config.ts"
+	],
+  "exclude": [
+    "node_modules"
+  ]
+}

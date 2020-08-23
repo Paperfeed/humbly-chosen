@@ -1,0 +1,57 @@
+{
+  "plugins": [
+    "@typescript-eslint",
+    "prettier",
+    "react",
+    "simple-import-sort",
+    "sort-keys-fix",
+    "typescript-sort-keys"
+  ],
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+    "plugin:prettier/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "prettier/@typescript-eslint"
+  ],
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": false,
+        "trailingComma": "all",
+        "singleQuote": true,
+        "arrowParens": "avoid"
+      }
+    ],
+    /**
+     * React
+     */
+    "react/prop-types": "off",
+    "react/jsx-filename-extension": [
+      "warn",
+      {
+        "extensions": [".jsx", ".tsx"]
+      }
+    ],
+    /**
+     * Typescript
+     */
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-var-requires": "off",
+    /**
+     * Sorting
+     */
+    "simple-import-sort/sort": "warn",
+    "sort-keys-fix/sort-keys-fix": "warn",
+    "typescript-sort-keys/interface": "warn",
+    "typescript-sort-keys/string-enum": "warn"
+  },
+  "env": {
+    "webextensions": true
+  }
+}
