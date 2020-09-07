@@ -1,104 +1,65 @@
-import { browser, Runtime } from 'webextension-polyfill-ts'
-
-import { BackgroundMessage } from '../Background'
 import { Debug } from '../lib/debug'
-import { BackgroundMessageType, ContentMessageType } from '../lib/enums'
-import { getGameInfo } from '../lib/igdb'
-import { requestFromSteam } from '../lib/request'
+import { ContentScriptOptions } from '../messages/background-messages'
+import { Choice, Content } from '../messages/content-messages'
+import {
+  createListener,
+  registerListener,
+  sendMessage,
+} from '../messages/handler'
 import { injectApp } from './App'
-type MessageSender = Runtime.MessageSender
-
-interface UserAppResponse {
-  response: {
-    game_count: number
-    games: GameData[]
-  }
-}
-
-interface GameData {
-  appid: number
-  img_icon_url: string
-  img_logo_url: string
-  name: string
-  playtime_forever: number
-  playtime_linux_forever: number
-  playtime_mac_forever: number
-  playtime_windows_forever: number
-}
 
 function harvestChoices() {
-  const titleElements = document.querySelectorAll('.content-choice-title')
+  const choiceElements = document.querySelectorAll('.content-choice')
 
-  const titles: string[] = []
-  titleElements.forEach(t =>
-    t.textContent !== null ? titles.push(t.textContent.trim()) : 'ERROR',
-  )
+  console.log(choiceElements)
 
-  return titles
+  const choices: Choice[] = []
+  choiceElements.forEach(c => {
+    const title = c.querySelector('.content-choice-title')
+    const machineName = c.querySelector('[data-machine-name]') as HTMLElement
+    choices.push({
+      machineName:
+        machineName !== null && machineName.dataset.machineName
+          ? machineName.dataset.machineName
+          : 'ERROR',
+      title:
+        title !== null && title.textContent
+          ? title.textContent.trim()
+          : 'ERROR',
+    })
+  })
+
+  return choices
 }
-async function onInitialized(apiUrl: string) {
-  Debug.log('Content script has successfully initialized')
+
+async function onInitialized(options: ContentScriptOptions) {
+  Debug.log(2, 'Content script has successfully initialized')
+  const { apiUrl, steamId } = options
 
   const choices = harvestChoices()
-  console.log(choices)
-  injectApp({ titles: choices })
+  injectApp({ choices, options, sendMessage })
 
   try {
-    const userAppsResponse = await requestFromSteam<UserAppResponse>(
-      `${apiUrl}/steam/getOwnedGames?steamid=76561197988723008`,
-    )
-    console.log('UserAppResponse', userAppsResponse)
+    // const userAppsResponse = await requestFromSteam<UserAppResponse>(
+    //   `${apiUrl}/steam/getOwnedGames?steamid=76561197988723008`,
+    // )
+    // console.log('UserAppResponse', userAppsResponse)
     // const userAppsResponse = await request<UserAppResponse>(
     //   'https://www.foxslash.com/apps/steamchecker/?steamid=76561197988723008',
     // )
     // console.log('UserAppResponse', userAppsResponse)
-    const result = await getGameInfo(apiUrl)
-    console.log('getGameInfo', result)
   } catch (e) {
     console.error(e)
   }
 }
 
-async function contentMessageHandler(
-  request: BackgroundMessage,
-  sender: MessageSender,
-) {
-  {
-    Debug.log(
-      `Content received message from ${sender.id}: ${JSON.stringify(
-        request,
-        null,
-        2,
-      )}`,
-    )
-
-    // const sendResponse = (message: Message) => {
-    //   Debug.log(
-    //     `Sending message to ${sender.id}: ${JSON.stringify(message, null, 2)}`,
-    //   )
-    //   return message
-    // }
-
-    switch (request.type) {
-      case BackgroundMessageType.SendOptions:
-        break
-      case BackgroundMessageType.SendDevStatus:
-        break
-    }
-  }
-}
-
 async function initialize() {
-  const response = await browser.runtime.sendMessage({
-    type: ContentMessageType.Initialize,
-  })
-  browser.runtime.onMessage.addListener(contentMessageHandler)
+  const listener = createListener()
+  registerListener(listener)
 
-  const apiUrl = response.content.isDev
-    ? 'https://humbly-cors.glitch.me' //'http://localhost:3000'
-    : 'https://humbly-cors.glitch.me'
+  const options = await sendMessage(Content.Initialize)
 
-  await onInitialized(apiUrl)
+  onInitialized(options)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

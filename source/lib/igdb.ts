@@ -1,5 +1,5 @@
 import { Debug } from './debug'
-import { Endpoint, ExternalGameCategory } from './igdb-enums'
+import { Endpoint, ExternalGameCategory, GameCategory } from './igdb-enums'
 import { APP_ID } from './request'
 
 const axios = require('axios').default
@@ -36,11 +36,11 @@ async function fetchIDGBData<T>(
     throw new Error('API_URL has not been initialized yet')
   }
 
-  Debug.log(`Requesting from ${apiUrl}: ${dataToRequestBody(data)}`)
+  Debug.log(0, `Requesting from ${apiUrl}: ${dataToRequestBody(data)}`)
 
   try {
     const response = await axios.post(
-      `${apiUrl}/${endpoint}`,
+      `${apiUrl}/igdb/${endpoint}`,
       dataToRequestBody(data),
       {
         headers: {
@@ -56,37 +56,63 @@ async function fetchIDGBData<T>(
   }
 }
 
-export const getGameInfo = async (apiUrl: string) =>
-  await fetchIDGBData(apiUrl, Endpoint.ExternalGames, {
+export interface GameDataResponse {
+  age_ratings: number[]
+  aggregated_rating: number
+  aggregated_rating_count: number
+  artworks: number[]
+  category: GameCategory
+  checksum: string
+  cover: number
+  created_at: number // UTC
+  dlcs: number[]
+  external_games: number[]
+  first_release_date: number
+  game_engines: number[]
+  game_modes: number[]
+  genres: number[]
+  hypes: number
+  id: number
+  involved_companies: number[]
+  keywords: number[]
+  name: string
+  platforms: number[]
+  player_perspectives: number[]
+  popularity: number
+  pulse_count: number
+  rating: number
+  rating_count: number
+  release_dates: number[]
+  screenshots: number[]
+  similar_games: number[]
+  slug: string
+  storyline: string
+  summary: string
+  tags: number[]
+  themes: number[]
+  total_rating: number
+  total_rating_count: number
+  updated_at: number
+  url: string
+  videos: number[]
+  websites: number[]
+}
+
+export const getGameInfo = async (apiUrl: string, games: string[] | number[]) =>
+  await fetchIDGBData<GameDataResponse[]>(apiUrl, Endpoint.Games, {
     fields: '*',
-    limit: 10,
-    where: `category = ${ExternalGameCategory.Steam}`,
+    where: `id = (${games.join(',')})`,
   })
 
-// export const getGameInfo = async (apiUrl: string) => {
-//   const response = await apicalypseFactory({
-//     baseURL: apiUrl,
-//     headers: {
-//       Accept: 'application/json',
-//       appId: APP_ID,
-//     },
-//     method: 'POST',
-//   })
-//     .fields([
-//       GameField.Name,
-//       GameField.AggregatedRating,
-//       GameField.AggregatedRatingCount,
-//       GameField.PlayerPerspectives,
-//       GameField.TimeToBeat,
-//       GameField.TotalRating,
-//       GameField.TotalRatingCount,
-//       GameField.Popularity,
-//     ])
-//     .limit(10)
-//     .sort(GameField.Name, 'desc')
-//     .search('Halo')
-//     .where('rating >= 80')
-//     .request(`${Endpoint.Games}`)
-//
-//   return response.data
-// }
+type SteamIDLookupResponse = { game: number }[]
+
+export const getGameIdBySteamId = async (
+  apiUrl: string,
+  games: string[] | number[],
+) =>
+  await fetchIDGBData<SteamIDLookupResponse>(apiUrl, Endpoint.ExternalGames, {
+    fields: 'game',
+    where: `category = ${ExternalGameCategory.Steam} & uid = (${games.join(
+      ',',
+    )})`,
+  })
