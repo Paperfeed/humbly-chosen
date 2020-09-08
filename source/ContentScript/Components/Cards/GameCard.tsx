@@ -1,30 +1,33 @@
 import React from 'react'
-import styled, { ThemeProvider } from 'styled-components'
-import tinygradient from 'tinygradient'
+import styled from 'styled-components'
 
 import { GameDataResponse } from '../../../lib/igdb'
-import { clampToRange } from '../../../lib/utilities'
-import { themeStyle } from '../Theme/themeStyle'
+import { Icon } from '../Icon/Icon'
+import { BackgroundGradient, ScoreGradient } from '../Theme/gradients'
 import { ToolTip } from '../Tooltip/ToolTip'
 
-interface GameCardProps {
+export interface GameCardProps {
   data: GameDataResponse | undefined
-  ownsGame: boolean
+  ownsGame?: boolean
 }
 
 const Score = styled.div<{ color: string }>`
+  display: grid;
+  place-content: center;
+
   border-radius: 50%;
-  background: ${props => props.color};
-  color: ${props => props.theme.color.black};
   width: 25px;
   height: 25px;
   margin: 5px;
 
-  display: grid;
-  place-content: center;
+  background: ${props => props.color};
+  color: ${props => props.theme.color.black};
+  box-shadow: 1px 2px 5px 0px #0000008a;
+
+  cursor: default;
 `
 
-const StyledGameCard = styled.div`
+const StyledGameCard = styled.div<{ background?: string; ownsGame?: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -34,42 +37,62 @@ const StyledGameCard = styled.div`
   display: grid;
   grid-auto-columns: min-content;
   grid-auto-flow: column;
+
+  font-weight: bold;
+
+  background: ${props => props.background};
+  ${props =>
+    props.ownsGame && {
+      boxShadow: 'inset 0px 0px 80px 0px #00ff00a3',
+    }}
 `
 
-const gradient = tinygradient([
-  { color: '#f72400', pos: 0 },
-  { color: '#f8fc0c', pos: 0.7 },
-  { color: '#24ff00', pos: 1 },
-])
-
 export const GameCard: React.FC<GameCardProps> = ({ data, ownsGame }) => {
-  if (!data) return <StyledGameCard>No data found</StyledGameCard>
+  if (!data)
+    return (
+      <StyledGameCard>
+        <ToolTip content={<span>Could not find any data</span>}>
+          <Score color={'#3c3c3c'}>
+            <Icon
+              width={15}
+              height={15}
+              highlight="white"
+              name="questionMark"
+            />
+          </Score>
+        </ToolTip>
+      </StyledGameCard>
+    )
 
   const aggregatedRating = Math.round(data?.aggregated_rating)
   const rating = Math.round(data?.rating)
 
   return (
-    <ThemeProvider theme={themeStyle}>
-      <StyledGameCard>
-        <ToolTip
-          content={<span>Out of {data.aggregated_rating_count} ratings</span>}
+    <StyledGameCard
+      background={BackgroundGradient.css('linear', 'to bottom')}
+      ownsGame={ownsGame}
+    >
+      <ToolTip
+        content={<span>Out of {data.aggregated_rating_count} ratings</span>}
+      >
+        <Score
+          color={ScoreGradient.rgbAt(aggregatedRating / 100).toRgbString()}
         >
-          <Score
-            color={gradient
-              .rgbAt(clampToRange(aggregatedRating, 100))
-              .toRgbString()}
-          >
-            {aggregatedRating}
+          {aggregatedRating}
+        </Score>
+      </ToolTip>
+      <ToolTip content={<span>Out of {data.rating_count} ratings</span>}>
+        <Score color={ScoreGradient.rgbAt(rating / 100).toRgbString()}>
+          {rating}
+        </Score>
+      </ToolTip>
+      {ownsGame && (
+        <ToolTip content={<span>You already own this game</span>}>
+          <Score color={'#3894eb'}>
+            <Icon width={15} height={15} highlight="white" name="joystick" />
           </Score>
         </ToolTip>
-        <ToolTip content={<span>Out of {data.rating_count} ratings</span>}>
-          <Score
-            color={gradient.rgbAt(clampToRange(rating, 100)).toRgbString()}
-          >
-            {rating}
-          </Score>
-        </ToolTip>
-      </StyledGameCard>
-    </ThemeProvider>
+      )}
+    </StyledGameCard>
   )
 }
