@@ -8,10 +8,10 @@ import { Choice, Content } from '../messages/content-messages'
 import { sendMessage } from '../messages/handler'
 import { Button } from './Components/Button/Button'
 import { GameCard } from './Components/Cards/GameCard'
+import { Flex } from './Components/Flex/Flex'
 import { Input } from './Components/Input/Input'
 import { themeStyle } from './Components/Theme/themeStyle'
 import { Text } from './Components/Typography/Text'
-import { Flex } from './Flex/Flex'
 import useDebounce from './Hooks/useDebounce'
 
 interface AppProps {
@@ -44,7 +44,12 @@ async function retrieveAndInjectGameData(choices: Choice[]) {
     container.className = 'humbly-gamecard'
 
     card.appendChild(container)
-    ReactDOM.render(<GameCard data={matchingData?.data} />, container)
+    ReactDOM.render(
+      <ThemeProvider theme={themeStyle}>
+        <GameCard data={matchingData?.data} ownsGame={false} />
+      </ThemeProvider>,
+      container,
+    )
   })
 }
 
@@ -53,7 +58,7 @@ function saveSteamId(steamId: string, username: string) {
 }
 
 const App: React.FC<AppProps> = ({ options, choices }) => {
-  const { apiUrl, steamId, username } = options
+  const { steamId, username } = options
 
   const [localUsername, setLocalUserName] = useState(username || '')
   const [retrievedSteamId, setRetrievedSteamId] = useState(steamId || '')
