@@ -1,10 +1,10 @@
 import Tippy from '@tippyjs/react/headless'
-import React from 'react'
+import React, { ReactElement } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
 interface ToolTipProps {
-  content: React.ReactNode
+  content: ReactElement
 }
 
 const Box = styled(animated.div)`
@@ -44,7 +44,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({ content, children }) => {
         })
       }}
     >
-      <>{children}</>
+      {(children as unknown) as JSX.Element}
     </Tippy>
   )
 }
