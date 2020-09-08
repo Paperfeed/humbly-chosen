@@ -36,7 +36,8 @@
 	},
 	"include": [
 		"source",
-		"webpack.config.ts"
+		"webpack.config.ts",
+        ".storybook"
 	],
   "exclude": [
     "node_modules"

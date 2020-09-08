@@ -23,10 +23,13 @@
     "build:opera": "cross-env NODE_ENV=production cross-env TARGET_BROWSER=opera webpack",
     "build": "yarn run build:chrome && yarn run build:firefox && yarn run build:opera",
     "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix"
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "storybook": "start-storybook -p 9000",
+    "build-storybook": "build-storybook"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.2",
+    "@juggle/resize-observer": "^3.2.0",
     "@tippyjs/react": "^4.1.0",
     "advanced-css-reset": "^1.1.1",
     "apicalypse": "^0.1.6",
@@ -52,6 +55,10 @@
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-react": "^7.10.1",
     "@babel/preset-typescript": "^7.10.1",
+    "@storybook/addon-actions": "^6.0.21",
+    "@storybook/addon-essentials": "^6.0.21",
+    "@storybook/addon-links": "^6.0.21",
+    "@storybook/react": "^6.0.21",
     "@types/apicalypse": "^0.1.0",
     "@types/autoprefixer": "^9.7.2",
     "@types/axios": "^0.14.0",
@@ -100,6 +107,7 @@
     "pnp-webpack-plugin": "^1.6.4",
     "postcss-loader": "^3.0.0",
     "prettier": "^2.0.5",
+    "react-is": "^16.13.1",
     "resolve-url-loader": "^3.1.1",
     "sass-loader": "^8.0.2",
     "terser-webpack-plugin": "^2.3.7",
