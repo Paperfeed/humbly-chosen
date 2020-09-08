@@ -5,7 +5,11 @@ import { browser } from 'webextension-polyfill-ts'
 import { indexSteamAppList } from '../lib/db'
 import { Debug, extensionIsDev } from '../lib/debug'
 import { StorageKey } from '../lib/enums'
-import { getFromStorage, StoredOptions } from '../lib/local-storage'
+import {
+  getFromStorage,
+  saveToStorage,
+  StoredOptions,
+} from '../lib/local-storage'
 import { requestFromSteam, SteamEndpoint } from '../lib/request'
 import { getAPIUrl } from '../lib/utilities'
 import { Content } from '../messages/content-messages'
@@ -24,6 +28,9 @@ async function onBackgroundInit(apiUrl: string) {
     )
     .handleMessage(Content.RequestSteamId, ({ username }) =>
       resolveSteamUserName(apiUrl, username),
+    )
+    .handleMessage(Content.SetSteamId, ({ username, steamId }) =>
+      saveToStorage({ [StorageKey.Options]: { steamId, username } }),
     )
 
   registerListener(listener)
