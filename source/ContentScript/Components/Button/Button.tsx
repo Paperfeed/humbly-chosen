@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { LoadingBars } from '../Spinner/LoadingBars'
 
-interface ButtonProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ButtonProps extends React.HTMLAttributes<HTMLDivElement> {
   disabled?: boolean
   loading?: boolean
 }
