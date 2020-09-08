@@ -69,7 +69,6 @@ export const GameCard: React.FC<GameCardProps> = ({ data, ownsGame }) => {
             {rating}
           </Score>
         </ToolTip>
-        {data.name}
       </StyledGameCard>
     </ThemeProvider>
   )
