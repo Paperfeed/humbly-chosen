@@ -28,7 +28,6 @@ export const database = new SteamAppDatabase()
 export async function indexSteamAppList(data: AppListResponse) {
   Debug.log(1, 'Initializing Datastore')
   database.open().catch(e => {
-    console.log('Error opening database')
     Debug.log(3, 'Opening Database failed with error: ', e)
   })
 

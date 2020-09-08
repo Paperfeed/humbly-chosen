@@ -51,7 +51,7 @@ async function fetchIDGBData<T>(
     )
     return response.data
   } catch (e) {
-    console.log(e)
+    Debug.log(4, `IGDB request failed with error ${e}`)
     throw new Error('Could not retrieve data from IGDB')
   }
 }

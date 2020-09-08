@@ -10,10 +10,8 @@ import { injectApp } from './App'
 
 function harvestChoices() {
   const choiceElements = document.querySelectorAll('.content-choice')
-
-  console.log(choiceElements)
-
   const choices: Choice[] = []
+
   choiceElements.forEach(c => {
     const title = c.querySelector('.content-choice-title')
     const machineName = c.querySelector('[data-machine-name]') as HTMLElement
