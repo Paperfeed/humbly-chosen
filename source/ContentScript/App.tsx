@@ -6,6 +6,7 @@ import { Debug } from '../lib/debug'
 import { ContentScriptOptions } from '../messages/background-messages'
 import { Choice, Content } from '../messages/content-messages'
 import { sendMessage } from '../messages/handler'
+import { Button } from './Components/Button/Button'
 import { GameCard } from './Components/Cards/GameCard'
 import { Input } from './Components/Input/Input'
 import { themeStyle } from './Components/Theme/themeStyle'
@@ -47,10 +48,16 @@ async function retrieveAndInjectGameData(choices: Choice[]) {
   })
 }
 
+function saveSteamId(steamId: string, username: string) {
+  sendMessage(Content.SetSteamId, { steamId, username })
+}
+
 const App: React.FC<AppProps> = ({ options, choices }) => {
   const { apiUrl, steamId, username } = options
-  const [localUsername, setLocalUserName] = useState(username)
-  const [retrievedSteamId, setRetrievedSteamId] = useState(steamId)
+
+  const [localUsername, setLocalUserName] = useState(username || '')
+  const [retrievedSteamId, setRetrievedSteamId] = useState(steamId || '')
+  const [loading, setLoading] = useState(false)
   const debouncedUserName = useDebounce(localUsername, 500)
 
   const onSteamIDSearch = async (username: string) => {
@@ -61,7 +68,8 @@ const App: React.FC<AppProps> = ({ options, choices }) => {
 
   useEffect(() => {
     if (!debouncedUserName) return
-    onSteamIDSearch(debouncedUserName)
+    setLoading(true)
+    onSteamIDSearch(debouncedUserName).then(() => setLoading(false))
   }, [debouncedUserName])
 
   useEffect(() => {
@@ -89,10 +97,17 @@ const App: React.FC<AppProps> = ({ options, choices }) => {
                 }}
               />
               <Input
-                readonly
+                readOnly
                 placeholder="Your steamID will be shown here"
                 value={retrievedSteamId}
               />
+              <Button
+                disabled={retrievedSteamId === ''}
+                loading={Boolean(loading)}
+                onClick={() => saveSteamId(retrievedSteamId, localUsername)}
+              >
+                Save
+              </Button>
             </Flex>
           </>
         )}
