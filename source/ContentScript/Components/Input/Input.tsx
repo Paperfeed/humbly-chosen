@@ -1,12 +1,10 @@
 import styled from 'styled-components'
 
 interface InputProps {
-  readonly?: boolean
+  readOnly?: boolean
 }
 
-export const Input = styled.input.attrs<InputProps>(({ readonly }) => ({
-  readonly,
-}))<InputProps>`
+export const Input = styled.input<InputProps>`
   height: 30px;
   padding: 0 10px;
   border-radius: 3px;
@@ -15,7 +13,7 @@ export const Input = styled.input.attrs<InputProps>(({ readonly }) => ({
   color: ${props => props.theme.color.black};
 
   ${props =>
-    props.readonly && {
+    props.readOnly && {
       background: props.theme.color.primaryDark,
       border: `2px solid ${props.theme.color.primaryBlue}`,
       color: props.theme.color.white,
