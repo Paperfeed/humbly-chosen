@@ -14,3 +14,5 @@ export const themeStyle = {
     body: undefined,
   },
 } as const
+
+export type Highlight = keyof typeof themeStyle['color']
