@@ -1,3 +1,5 @@
+import { DefaultTheme } from 'styled-components'
+
 import { extensionIsDev } from './debug'
 
 export const getAPIUrl = async () =>
@@ -5,12 +7,4 @@ export const getAPIUrl = async () =>
     ? 'http://localhost:8888' //'http://localhost:3000'
     : 'https://humbly-serverless.netlify.app'
 
-export const clampToRange = (
-  value: number,
-  originalMax: number,
-  originalMin = 0,
-  newMin = 0,
-  newMax = 1,
-) =>
-  ((value - originalMin) * (newMax - newMin)) / (originalMax - originalMin) +
-  newMin
+export type WithTheme<T> = T & { theme: DefaultTheme }
