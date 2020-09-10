@@ -37,12 +37,23 @@ export async function indexSteamAppList(data: AppListResponse) {
     2,
     `Database currently holds ${recordsInDB} records, Steam App list returned ${recordsOnSteam}`,
   )
-
   const time = performance.now()
+
   if (recordsOnSteam < recordsInDB) {
     Debug.log(2, `Purging database of ${recordsInDB - recordsOnSteam} records`)
-    const appIds = data.applist.apps.map(app => app.appid)
-    await database.apps.where('appId').noneOf(appIds).delete()
+    const steamAppIds = data.applist.apps.reduce<
+      Record<string, { appid: string; name: string }>
+    >((obj, current) => {
+      obj[current.appid] = current
+      return obj
+    }, {})
+
+    const allApps = await database.apps.toCollection().toArray()
+    const appsToBePurged = allApps
+      .filter(a => steamAppIds[a.appId] === undefined)
+      .map(i => i.appId)
+
+    await database.apps.where('appId').anyOf(appsToBePurged).delete()
   } else if (recordsOnSteam > recordsInDB) {
     Debug.log(
       2,
