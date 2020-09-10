@@ -1,5 +1,3 @@
-import './styles.scss'
-
 import React from 'react'
 import { browser, Tabs } from 'webextension-polyfill-ts'
 
