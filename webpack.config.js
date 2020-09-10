@@ -6,10 +6,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const ExtensionReloader = require('webpack-extension-reloader')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const WextManifestWebpackPlugin = require('wext-manifest-webpack-plugin')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const viewsPath = path.join(__dirname, 'views')
 const sourcePath = path.join(__dirname, 'source')
@@ -76,30 +74,6 @@ module.exports = {
         loader: 'babel-loader',
         test: /\.(js|ts)x?$/,
       },
-      {
-        test: /\.(sa|sc|c)ss$/,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader, // It creates a CSS file per JS file which contains CSS
-          },
-          {
-            loader: 'css-loader', // Takes the CSS files and returns the CSS with imports and url(...) for Webpack
-            options: {
-              sourceMap: true,
-            },
-          },
-          {
-            loader: 'postcss-loader', // For autoprefixer
-            options: {
-              ident: 'postcss',
-              // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-              plugins: [require('autoprefixer')()],
-            },
-          },
-          'resolve-url-loader', // Rewrites relative paths in url() statements
-          'sass-loader', // Takes the Sass/SCSS file and compiles to the CSS
-        ],
-      },
     ],
   },
 
@@ -113,11 +87,6 @@ module.exports = {
           output: {
             comments: false,
           },
-        },
-      }),
-      new OptimizeCSSAssetsPlugin({
-        cssProcessorPluginOptions: {
-          preset: ['default', { discardComments: { removeAll: true } }],
         },
       }),
       new ZipPlugin({
@@ -165,8 +134,6 @@ module.exports = {
       inject: 'body',
       template: path.join(viewsPath, 'options.html'),
     }),
-    // write css file(s) to build folder
-    new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
     // copy static assets
     new CopyWebpackPlugin([{ from: 'source/assets', to: 'assets' }]),
     // plugin to enable browser reloading in development mode
