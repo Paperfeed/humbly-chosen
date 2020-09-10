@@ -71,7 +71,10 @@ export function useDimensions({
         window.removeEventListener('scroll', measure)
       }
     }
-  }, [node])
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    return () => {}
+  }, [liveMeasure, node])
 
   return [ref, dimensions as DimensionObject, node]
 }
