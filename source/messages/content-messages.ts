@@ -7,9 +7,9 @@ export type Choice = {
   title: string
 }
 
-type GameDataRequest = Choice[]
+type GameDataRequest = { games: Choice[]; identifier: string }
 
-type GameInfoResponse = {
+export type GameInfoResponse = {
   data: GameDataResponse | undefined
   machineName: string
 }

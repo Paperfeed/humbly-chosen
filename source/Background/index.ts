@@ -6,9 +6,10 @@ import { indexSteamAppList } from '../lib/db'
 import { Debug, extensionIsDev } from '../lib/debug'
 import { StorageKey } from '../lib/enums'
 import {
+  getFromLocalStorage,
   getFromStorage,
+  saveToLocalStorage,
   saveToStorage,
-  StoredOptions,
 } from '../lib/local-storage'
 import { requestFromSteam, SteamEndpoint } from '../lib/request'
 import { getAPIUrl } from '../lib/utilities'
@@ -21,11 +22,23 @@ async function onBackgroundInit(apiUrl: string) {
     .handleMessage(Content.Initialize, async () => ({
       apiUrl: apiUrl,
       isDev: await extensionIsDev(),
-      ...(await getFromStorage<StoredOptions>(StorageKey.Options)),
+      ...(await getFromStorage(StorageKey.Options)),
     }))
-    .handleMessage(Content.RequestGameData, payload =>
-      findAppIdsByName(payload),
-    )
+    .handleMessage(Content.RequestGameData, async ({ identifier, games }) => {
+      const fromStorage = await getFromLocalStorage(StorageKey.HumbleChoiceData)
+      if (fromStorage && fromStorage[identifier]) {
+        Debug.log(0, `Results for ${identifier} were found in local storage.`)
+        return fromStorage[identifier]
+      }
+      const results = await findAppIdsByName(games)
+      saveToLocalStorage({
+        [StorageKey.HumbleChoiceData]: {
+          [identifier]: results,
+        },
+      })
+
+      return results
+    })
     .handleMessage(Content.RequestSteamId, ({ username }) =>
       resolveSteamUserName(apiUrl, username),
     )

@@ -25,8 +25,18 @@ const AppContainer = styled.div`
   width: 100%;
 `
 
+const getIdentifier = () => {
+  const splitPaths = window.location.pathname.split('/')
+  if (splitPaths.length >= 3) return splitPaths[2]
+  console.error('Somehow ended up on incorrect page')
+  return ''
+}
+
 const requestGameData = async (games: Choice[]) =>
-  sendMessage(Content.RequestGameData, games)
+  sendMessage(Content.RequestGameData, {
+    games,
+    identifier: getIdentifier(),
+  })
 
 async function retrieveAndInjectGameData(choices: Choice[]) {
   const response = await requestGameData(choices)
