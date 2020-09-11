@@ -22,7 +22,7 @@ const Score = styled.div<{ color: string }>`
 
   background: ${props => props.color};
   color: ${props => props.theme.color.black};
-  box-shadow: 1px 2px 5px 0px #0000008a;
+  box-shadow: 1px 2px 5px 0 #0000008a;
 
   cursor: default;
 `
@@ -64,28 +64,36 @@ export const GameCard: React.FC<GameCardProps> = ({ data, ownsGame }) => {
       </StyledGameCard>
     )
 
-  const aggregatedRating = Math.round(data?.aggregated_rating)
-  const rating = Math.round(data?.rating)
+  const aggregatedRating = isNaN(data?.aggregated_rating)
+    ? undefined
+    : Math.round(data?.aggregated_rating)
+  const rating = isNaN(data?.rating) ? undefined : Math.round(data?.rating)
 
   return (
     <StyledGameCard
       background={BackgroundGradient.css('linear', 'to bottom')}
       ownsGame={ownsGame}
     >
-      <ToolTip
-        content={<span>Out of {data.aggregated_rating_count} ratings</span>}
-      >
-        <Score
-          color={ScoreGradient.rgbAt(aggregatedRating / 100).toRgbString()}
+      {aggregatedRating && (
+        <ToolTip
+          content={
+            <span>Out of {data.aggregated_rating_count || 0} ratings</span>
+          }
         >
-          {aggregatedRating}
-        </Score>
-      </ToolTip>
-      <ToolTip content={<span>Out of {data.rating_count} ratings</span>}>
-        <Score color={ScoreGradient.rgbAt(rating / 100).toRgbString()}>
-          {rating}
-        </Score>
-      </ToolTip>
+          <Score
+            color={ScoreGradient.rgbAt(aggregatedRating / 100).toRgbString()}
+          >
+            {aggregatedRating}
+          </Score>
+        </ToolTip>
+      )}
+      {rating && (
+        <ToolTip content={<span>Out of {data.rating_count || 0} ratings</span>}>
+          <Score color={ScoreGradient.rgbAt(rating / 100).toRgbString()}>
+            {rating}
+          </Score>
+        </ToolTip>
+      )}
       {ownsGame && (
         <ToolTip content={<span>You already own this game</span>}>
           <Score color={'#3894eb'}>

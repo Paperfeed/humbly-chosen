@@ -1,10 +1,15 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
-import { TypographyProps } from './Common'
+import { parsePosition, TypographyProps } from './Common'
 
-export const Text = styled.p<TypographyProps>`
-  font-size: ${props => props.theme.fontSize.body};
-  text-transform: ${props => (props.uppercase ? 'uppercase' : 'none')};
-  word-break: break-word;
-  margin: 0;
-`
+export const Text = styled.p<TypographyProps>(
+  ({ theme: { fontSize }, bold, uppercase, ...rest }) => css`
+    font-size: ${fontSize.body};
+    text-transform: ${uppercase ? 'uppercase' : 'none'};
+    font-weight: ${bold && 'bold'};
+    word-break: break-word;
+    margin: 0;
+
+    ${parsePosition(rest)}
+  `,
+)

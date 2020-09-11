@@ -43,7 +43,7 @@ export const Flex = styled.div<FlexProps>(
       [column ? 'marginBottom' : 'marginRight']: withMargins
         ? typeof withMargins === 'string'
           ? withMargins
-          : '20px'
+          : '1.5em'
         : undefined,
     },
     alignItems: center || centerVertical ? 'center' : undefined,

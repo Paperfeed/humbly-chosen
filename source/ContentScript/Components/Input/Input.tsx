@@ -17,5 +17,6 @@ export const Input = styled.input<InputProps>`
       background: props.theme.color.primaryDark,
       border: `2px solid ${props.theme.color.primaryBlue}`,
       color: props.theme.color.white,
+      cursor: 'not-allowed',
     }}
 `
