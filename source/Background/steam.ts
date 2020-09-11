@@ -34,19 +34,24 @@ export async function findAppIdsByName(games: Choice[]) {
   )
 
   const apiUrl = await getAPIUrl()
+  const databaseResults = fuzzySorted.map(a => a && a.obj)
+  const mergedResults = databaseResults
+    .map((a, i) => a && { ...a, machineName: games[i].machineName })
+    .filter(a => a !== undefined)
+
   const igdbIDs = await getGameIdBySteamId(
     apiUrl,
-    fuzzySorted.map(a => a && a.obj.appId).filter(a => a !== undefined),
+    databaseResults.map(a => a.appId),
   )
 
-  const data = await getGameInfo(
+  const dataFromIGDB = await getGameInfo(
     apiUrl,
     igdbIDs.map(r => r.game),
   )
 
-  return games.map(({ title, machineName }) => ({
-    data: data.find(d => d.name === title),
-    machineName,
+  return mergedResults.map(app => ({
+    data: dataFromIGDB.find(d => d.name === app.name),
+    ...app,
   }))
 }
 
