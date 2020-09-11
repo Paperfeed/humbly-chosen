@@ -1,5 +1,3 @@
-import 'emoji-log'
-
 import { browser } from 'webextension-polyfill-ts'
 
 import { indexSteamAppList } from '../lib/db'
@@ -58,8 +56,8 @@ browser.runtime.onInstalled.addListener(async () => {
     new Date(Date.now()).toTimeString(),
   )![0]
 
-  console.emoji(
-    '🦄',
+  Debug.log(
+    1,
     `[${timeStamp}] Extension installed and running in ${
       extensionIsDev() ? 'development' : 'production'
     } mode`,
