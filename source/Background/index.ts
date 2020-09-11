@@ -1,7 +1,6 @@
 import { browser } from 'webextension-polyfill-ts'
 
-import { indexSteamAppList } from '../lib/db'
-import { Debug, extensionIsDev } from '../lib/debug'
+import { Debug, extensionIsDev, Verbosity } from '../lib/debug'
 import { StorageKey } from '../lib/enums'
 import {
   getFromLocalStorage,
@@ -9,10 +8,11 @@ import {
   saveToLocalStorage,
   saveToStorage,
 } from '../lib/local-storage'
-import { requestFromSteam, SteamEndpoint } from '../lib/request'
 import { getAPIUrl } from '../lib/utilities'
 import { Content } from '../messages/content-messages'
 import { createListener, registerListener } from '../messages/handler'
+import { requestAndIndexApplist } from './Functions/requestAndIndexAppList'
+import { requestAndIndexOwnedGames } from './Functions/requestAndIndexOwnedGames'
 import { findAppIdsByName, resolveSteamUserName } from './steam'
 
 async function onBackgroundInit(apiUrl: string) {
@@ -29,7 +29,7 @@ async function onBackgroundInit(apiUrl: string) {
         return fromStorage[identifier]
       }
       const results = await findAppIdsByName(games)
-      saveToLocalStorage({
+      await saveToLocalStorage({
         [StorageKey.HumbleChoiceData]: {
           [identifier]: results,
         },
@@ -45,10 +45,12 @@ async function onBackgroundInit(apiUrl: string) {
     )
 
   registerListener(listener)
+  await requestAndIndexApplist(apiUrl)
 
-  Debug.log(0, `Requesting steamAppList from ${apiUrl}`)
-  const steamAppList = await requestFromSteam(apiUrl, SteamEndpoint.GetAppList)
-  await indexSteamAppList(steamAppList)
+  const { steamId } = await getFromStorage(StorageKey.Options)
+  if (steamId) {
+    await requestAndIndexOwnedGames(steamId, apiUrl)
+  }
 }
 
 browser.runtime.onInstalled.addListener(async () => {
@@ -57,7 +59,8 @@ browser.runtime.onInstalled.addListener(async () => {
   )![0]
 
   Debug.log(
-    1,
+    Verbosity.INFO,
+    // Do not await this - It will break the app:
     `[${timeStamp}] Extension installed and running in ${
       extensionIsDev() ? 'development' : 'production'
     } mode`,
