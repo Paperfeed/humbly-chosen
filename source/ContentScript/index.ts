@@ -32,23 +32,8 @@ function harvestChoices() {
 
 async function onInitialized(options: ContentScriptOptions) {
   Debug.log(2, 'Content script has successfully initialized')
-  const { apiUrl, steamId } = options
-
   const choices = harvestChoices()
   injectApp({ choices, options, sendMessage })
-
-  try {
-    // const userAppsResponse = await requestFromSteam<UserAppResponse>(
-    //   `${apiUrl}/steam/getOwnedGames?steamid=76561197988723008`,
-    // )
-    // console.log('UserAppResponse', userAppsResponse)
-    // const userAppsResponse = await request<UserAppResponse>(
-    //   'https://www.foxslash.com/apps/steamchecker/?steamid=76561197988723008',
-    // )
-    // console.log('UserAppResponse', userAppsResponse)
-  } catch (e) {
-    console.error(e)
-  }
 }
 
 async function initialize() {
