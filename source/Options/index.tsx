@@ -1,6 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
+import { Content } from '../messages/content-messages'
+import { sendMessage } from '../messages/handler'
 import Options from './Options'
 
-ReactDOM.render(<Options />, document.getElementById('options-root'))
+async function initialiseOptions() {
+  const options = await sendMessage(Content.Initialize)
+  console.log(options)
+  ReactDOM.render(
+    <Options options={options} />,
+    document.getElementById('options-root'),
+  )
+}
+
+initialiseOptions()
