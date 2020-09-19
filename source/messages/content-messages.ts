@@ -1,4 +1,4 @@
-import { GameDataResponse } from '../lib/igdb'
+import { findAppIdsByName } from '../Background/steam'
 import { ContentScriptOptions } from './background-messages'
 import { PayloadRecord } from './handler'
 
@@ -9,13 +9,10 @@ export type Choice = {
 
 type GameDataRequest = { games: Choice[]; identifier: string }
 
-export type GameInfoResponse = {
-  data: GameDataResponse | undefined
-  machineName: string
-}
+export type Await<T> = T extends Promise<infer U> ? U : T
+export type GameInfoResponse = Await<ReturnType<typeof findAppIdsByName>>
 
 export enum Content {
-  GetOptions = 'content/GET_OPTIONS',
   Initialize = 'content/INITIALIZE',
   RequestGameData = 'content/REQUEST_GAME_DATA',
   RequestSteamId = 'content/REQUEST_STEAM_ID',
@@ -30,6 +27,6 @@ export interface ContentPayload extends PayloadRecord<Content> {
 
 export interface ContentResponse extends PayloadRecord<Content> {
   [Content.Initialize]: ContentScriptOptions
-  [Content.RequestGameData]: GameInfoResponse[]
+  [Content.RequestGameData]: GameInfoResponse
   [Content.RequestSteamId]: { steamId: string }
 }
