@@ -17,12 +17,14 @@ export enum SteamEndpoint {
   GetSteamId = 'getSteamId',
 }
 
+export type SteamAppListGame = {
+  appid: string
+  name: string
+}
+
 export interface AppListResponse {
   applist: {
-    apps: {
-      appid: string
-      name: string
-    }[]
+    apps: SteamAppListGame[]
   }
 }
 
@@ -40,11 +42,8 @@ export interface SteamIDResponse {
   }
 }
 
-interface GameData {
+export interface GameData {
   appid: number
-  img_icon_url: string
-  img_logo_url: string
-  name: string
   playtime_forever: number
   playtime_linux_forever: number
   playtime_mac_forever: number
