@@ -1,7 +1,7 @@
 import { browser } from 'webextension-polyfill-ts'
 
 import { Debug, extensionIsDev, Verbosity } from '../lib/debug'
-import { StorageKey } from '../lib/enums'
+import { StorageKey, USE_CACHING } from '../lib/enums'
 import {
   getFromLocalStorage,
   getFromStorage,
@@ -16,19 +16,26 @@ import { requestAndIndexOwnedGames } from './Functions/requestAndIndexOwnedGames
 import { findAppIdsByName, resolveSteamUserName } from './steam'
 
 async function onBackgroundInit(apiUrl: string) {
+  const getOptions = async () => ({
+    apiUrl: apiUrl,
+    isDev: await extensionIsDev(),
+    ...(await getFromStorage(StorageKey.Options)),
+  })
+
   const listener = createListener()
-    .handleMessage(Content.Initialize, async () => ({
-      apiUrl: apiUrl,
-      isDev: await extensionIsDev(),
-      ...(await getFromStorage(StorageKey.Options)),
-    }))
+    .handleMessage(Content.Initialize, getOptions)
     .handleMessage(Content.RequestGameData, async ({ identifier, games }) => {
-      const fromStorage = await getFromLocalStorage(StorageKey.HumbleChoiceData)
-      if (fromStorage && fromStorage[identifier]) {
-        Debug.log(0, `Results for ${identifier} were found in local storage.`)
-        return fromStorage[identifier]
+      if (USE_CACHING) {
+        const fromStorage = await getFromLocalStorage(
+          StorageKey.HumbleChoiceData,
+        )
+        if (fromStorage && fromStorage[identifier]) {
+          Debug.log(0, `Results for ${identifier} were found in local storage.`)
+          return fromStorage[identifier]
+        }
       }
       const results = await findAppIdsByName(games)
+
       await saveToLocalStorage({
         [StorageKey.HumbleChoiceData]: {
           [identifier]: results,
