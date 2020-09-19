@@ -1,6 +1,6 @@
 import { browser } from 'webextension-polyfill-ts'
 
-import { Debug } from '../lib/debug'
+import { Debug, Verbosity } from '../lib/debug'
 import { MessageSender } from '../lib/types'
 import {
   Background,
@@ -42,7 +42,7 @@ export const sendResponse = <T extends MessageType>(
   sender: MessageSender,
 ) => {
   Debug.log(
-    0,
+    Verbosity.DEBUG,
     `Sending response to ${sender.id}: ${JSON.stringify(response, null, 2)}`,
   )
   return response
@@ -61,7 +61,7 @@ export function createListener(): {
         sender,
       )
       Debug.log(
-        0,
+        Verbosity.DEBUG,
         `Sending response for ${request.type} with payload ${JSON.stringify(
           request.payload,
           null,
@@ -109,7 +109,7 @@ export function registerListener(listener: ReturnType<typeof createListener>) {
     sender,
   ) {
     Debug.log(
-      0,
+      Verbosity.DEBUG,
       `Received message from [${
         sender.tab ? `${sender.tab.id} - ${sender.tab.title}` : sender.id
       }]: ${JSON.stringify(request, null, 2)}`,
