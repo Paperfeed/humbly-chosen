@@ -15,7 +15,7 @@ const Box = styled(animated.div)`
 `
 
 export const ToolTip: React.FC<ToolTipProps> = ({ content, children }) => {
-  const config = { friction: 15, tension: 300 }
+  const config = { friction: 25, tension: 400 }
   const initialStyles = { opacity: 0, transform: 'scale(0.5)' }
   const [props, setSpring] = useSpring(() => initialStyles)
 

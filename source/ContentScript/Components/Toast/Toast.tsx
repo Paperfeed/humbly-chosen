@@ -34,26 +34,34 @@ const StyledToast = animated(
 )
 
 export const Toast: React.FC<ToastProps> = ({ message, timeout = 2000 }) => {
-  const [show, setShow] = useState<boolean | undefined>(undefined)
-
+  const [show, setShow] = useState<boolean | undefined>()
+  const [timeoutId, setTimeoutId] = useState<number | undefined>()
   const springProps = useSpring({
-    [`${show ? 'from' : 'to'}`]: {
+    [`${show === undefined || show ? 'from' : 'to'}`]: {
       opacity: 0,
       transform: 'translateY(100%)',
     },
-    [`${show ? 'to' : 'from'}`]: {
+    [`${show === undefined || show ? 'to' : 'from'}`]: {
       opacity: 1,
       transform: 'translateY(0%)',
     },
   })
 
   useEffect(() => {
-    if (!message) return
-    setShow(true)
-    setTimeout(() => {
+    if (!message) {
       setShow(false)
-    }, timeout)
-  }, [message, timeout])
+      if (timeoutId) clearTimeout(timeoutId)
+      setTimeoutId(undefined)
+    } else {
+      setShow(true)
+      if (timeoutId) clearTimeout(timeoutId)
+      setTimeoutId(
+        setTimeout(() => {
+          setShow(false)
+        }, timeout),
+      )
+    }
+  }, [message, timeout, timeoutId])
 
   return (
     <Container>
