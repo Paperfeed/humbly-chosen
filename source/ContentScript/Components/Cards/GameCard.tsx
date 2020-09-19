@@ -2,8 +2,9 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { GameDataResponse } from '../../../lib/igdb'
+import { Score } from '../../Score/Score'
 import { Icon } from '../Icon/Icon'
-import { BackgroundGradient, ScoreGradient } from '../Theme/gradients'
+import { BackgroundGradient } from '../Theme/gradients'
 import { ToolTip } from '../Tooltip/ToolTip'
 
 export interface GameCardProps {
@@ -11,7 +12,7 @@ export interface GameCardProps {
   ownsGame?: boolean
 }
 
-const Score = styled.div<{ color: string }>`
+const CircleBadge = styled.div<{ color: string }>`
   display: grid;
   place-content: center;
 
@@ -50,55 +51,51 @@ const StyledGameCard = styled.div<{ background?: string; ownsGame?: boolean }>`
 export const GameCard: React.FC<GameCardProps> = ({ data, ownsGame }) => {
   if (!data)
     return (
-      <StyledGameCard>
+      <StyledGameCard ownsGame={ownsGame}>
         <ToolTip content={<span>Could not find any data</span>}>
-          <Score color={'#3c3c3c'}>
+          <CircleBadge color={'#3c3c3c'}>
             <Icon
               width={15}
               height={15}
               highlight="white"
               name="questionMark"
             />
-          </Score>
+          </CircleBadge>
         </ToolTip>
+        {ownsGame && (
+          <ToolTip content={<span>You already own this game</span>}>
+            <CircleBadge color={'#3894eb'}>
+              <Icon width={15} height={15} highlight="white" name="joystick" />
+            </CircleBadge>
+          </ToolTip>
+        )}
       </StyledGameCard>
     )
 
-  const aggregatedRating = isNaN(data?.aggregated_rating)
-    ? undefined
-    : Math.round(data?.aggregated_rating)
-  const rating = isNaN(data?.rating) ? undefined : Math.round(data?.rating)
+  const parseRating = (rating: undefined | number) =>
+    rating && isNaN(rating) ? undefined : rating && Math.round(rating)
 
   return (
     <StyledGameCard
       background={BackgroundGradient.css('linear', 'to bottom')}
       ownsGame={ownsGame}
     >
-      {aggregatedRating && (
-        <ToolTip
-          content={
-            <span>Out of {data.aggregated_rating_count || 0} ratings</span>
-          }
-        >
-          <Score
-            color={ScoreGradient.rgbAt(aggregatedRating / 100).toRgbString()}
-          >
-            {aggregatedRating}
-          </Score>
-        </ToolTip>
-      )}
-      {rating && (
-        <ToolTip content={<span>Out of {data.rating_count || 0} ratings</span>}>
-          <Score color={ScoreGradient.rgbAt(rating / 100).toRgbString()}>
-            {rating}
-          </Score>
-        </ToolTip>
-      )}
+      <Score
+        totalRating={{
+          count: data.total_rating_count,
+          rating: parseRating(data.total_rating),
+        }}
+        aggregatedRating={{
+          count: data.aggregated_rating_count,
+          rating: parseRating(data.aggregated_rating),
+        }}
+        rating={{ count: data.rating_count, rating: parseRating(data.rating) }}
+      />
       {ownsGame && (
         <ToolTip content={<span>You already own this game</span>}>
-          <Score color={'#3894eb'}>
+          <CircleBadge color={'#3894eb'}>
             <Icon width={15} height={15} highlight="white" name="joystick" />
-          </Score>
+          </CircleBadge>
         </ToolTip>
       )}
     </StyledGameCard>
