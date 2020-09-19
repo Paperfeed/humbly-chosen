@@ -1,5 +1,14 @@
 import { browser } from 'webextension-polyfill-ts'
 
+import { ENABLE_DEBUG } from './enums'
+
+/**
+ * DEBUG - For spammy operations that would otherwise clog the console
+ * LOG   - Flow of the application (eg. 'Initializing database')
+ * INFO  - Information that includes variables (eg. 'API returned ${count} results')
+ * WARN  - Warnings when something is wrong or missing but not critical
+ * ERROR - Operations that completely failed and probably break the functionality
+ */
 export enum Verbosity {
   DEBUG,
   LOG,
@@ -11,9 +20,10 @@ export enum Verbosity {
 export const LOG_VERBOSITY = process.env.LOG_VERBOSITY
   ? parseInt(process.env.LOG_VERBOSITY)
   : Verbosity.DEBUG
-export const DEBUG_ENABLED = process.env.DEBUG_MODE || true
+export const DEBUG_ENABLED = process.env.DEBUG_MODE || ENABLE_DEBUG
 
 const verbosityLabel = ['Debug', 'Log', 'Info', 'Warning', 'Error']
+
 export const extensionIsDev = async () =>
   browser.management
     .get(browser.runtime.id)
