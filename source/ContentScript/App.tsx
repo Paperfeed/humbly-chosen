@@ -2,27 +2,30 @@ import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import styled, { ThemeProvider } from 'styled-components'
 
-import { Debug } from '../lib/debug'
+import { Debug, Verbosity } from '../lib/debug'
+import { PageType } from '../lib/enums'
 import { ContentScriptOptions } from '../messages/background-messages'
 import { Choice, Content } from '../messages/content-messages'
 import { sendMessage } from '../messages/handler'
-import { Button } from './Components/Button/Button'
 import { GameCard } from './Components/Cards/GameCard'
-import { Flex } from './Components/Flex/Flex'
-import { Input } from './Components/Input/Input'
+import { SteamID } from './Components/SteamID/SteamID'
 import { themeStyle } from './Components/Theme/themeStyle'
+import { Toast } from './Components/Toast/Toast'
 import { Text } from './Components/Typography/Text'
-import useDebounce from './Hooks/useDebounce'
 
 interface AppProps {
   choices: Choice[]
   options: ContentScriptOptions
+  pageType: PageType
   sendMessage: typeof sendMessage
 }
 
 const AppContainer = styled.div`
-  background: ${props => props.theme.color.primaryDark};
-  width: 100%;
+  padding: 1.5em 1.5em 0;
+
+  > *:not(:last-child) {
+    margin-bottom: 1.5em;
+  }
 `
 
 const getIdentifier = () => {
@@ -56,36 +59,15 @@ async function retrieveAndInjectGameData(choices: Choice[]) {
     card.appendChild(container)
     ReactDOM.render(
       <ThemeProvider theme={themeStyle}>
-        <GameCard data={matchingData?.data} ownsGame={false} />
+        <GameCard data={matchingData?.data} ownsGame={matchingData?.owned} />
       </ThemeProvider>,
       container,
     )
   })
 }
 
-function saveSteamId(steamId: string, username: string) {
-  sendMessage(Content.SetSteamId, { steamId, username })
-}
-
 const App: React.FC<AppProps> = ({ options, choices }) => {
-  const { steamId, username } = options
-
-  const [localUsername, setLocalUserName] = useState(username || '')
-  const [retrievedSteamId, setRetrievedSteamId] = useState(steamId || '')
-  const [loading, setLoading] = useState(false)
-  const debouncedUserName = useDebounce(localUsername, 500)
-
-  const onSteamIDSearch = async (username: string) => {
-    const response = await sendMessage(Content.RequestSteamId, { username })
-    Debug.log(0, `Received steamId response: ${response.steamId}`)
-    setRetrievedSteamId(response.steamId)
-  }
-
-  useEffect(() => {
-    if (!debouncedUserName) return
-    setLoading(true)
-    onSteamIDSearch(debouncedUserName).then(() => setLoading(false))
-  }, [debouncedUserName])
+  const [toastMessage, setToastMessage] = useState<string | undefined>()
 
   useEffect(() => {
     retrieveAndInjectGameData(choices)
@@ -94,45 +76,54 @@ const App: React.FC<AppProps> = ({ options, choices }) => {
   return (
     <ThemeProvider theme={themeStyle}>
       <AppContainer>
-        {!steamId && (
+        {!options?.steamId && (
           <>
-            <Text>
-              It appears you have not set up Humbly Chosen with your steam ID
-              yet. This will limit the functionality we can provide. <br />
+            <Text as="div">
+              It appears you have not set up&nbsp;
+              <b>
+                <i>Humbly Chosen</i>
+              </b>
+              &nbsp; with your steam ID yet. This will limit the functionality
+              we can provide. <br />
               <br />
               Note: Your steam profile should be set to public in order for all
-              functionality to work.
+              functionality to work. You can search it below by using the last
+              part of your Steam profile&apos;s url:
+              <pre>
+                https://steamcommunity.com/id/
+                <i>
+                  <b>your-username</b>
+                </i>
+              </pre>
             </Text>
-            <Flex withMargins>
-              <Input
-                placeholder="Username"
-                value={localUsername}
-                onChange={({ target: { value } }) => {
-                  setLocalUserName(value)
-                }}
-              />
-              <Input
-                readOnly
-                placeholder="Your steamID will be shown here"
-                value={retrievedSteamId}
-              />
-              <Button
-                disabled={retrievedSteamId === ''}
-                loading={Boolean(loading)}
-                onClick={() => saveSteamId(retrievedSteamId, localUsername)}
-              >
-                Save
-              </Button>
-            </Flex>
+
+            <SteamID
+              setToastMessage={setToastMessage}
+              steamId={options?.steamId || ''}
+              username={options?.username || ''}
+            />
           </>
         )}
       </AppContainer>
+      <Toast
+        message={toastMessage}
+        timeout={(toastMessage?.length || 0) * 80}
+      />
     </ThemeProvider>
   )
 }
 
-export function injectApp(data: AppProps) {
-  if (!/subscription/.test(window.location.pathname)) return
+const getCurrentPageType = () => {
+  if (/subscription/.test(window.location.pathname))
+    return PageType.HumbleChoice
+  return false
+}
+export function injectApp(data: Omit<AppProps, 'pageType'>) {
+  const pageType = getCurrentPageType()
+  if (!pageType) {
+    Debug.log(Verbosity.LOG, 'Current page is not supported')
+    return
+  }
   Debug.log(2, 'Injecting React App')
 
   const app = document.createElement('div')
@@ -143,6 +134,9 @@ export function injectApp(data: AppProps) {
 
   if (container) {
     container.insertAdjacentElement('afterend', app)
-    ReactDOM.render(<App {...data} />, document.getElementById('root'))
+    ReactDOM.render(
+      <App {...data} pageType={pageType} />,
+      document.getElementById('root'),
+    )
   }
 }
