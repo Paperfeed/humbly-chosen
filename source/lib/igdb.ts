@@ -1,5 +1,10 @@
 import { Debug } from './debug'
-import { Endpoint, ExternalGameCategory, GameCategory } from './igdb-enums'
+import {
+  Endpoint,
+  ExternalGameCategory,
+  GameCategory,
+  WebsiteCategory,
+} from './igdb-enums'
 import { APP_ID } from './request'
 
 const axios = require('axios').default
@@ -57,62 +62,78 @@ async function fetchIDGBData<T>(
 }
 
 export interface GameDataResponse {
-  age_ratings: number[]
+  age_ratings: { id: number; rating: number }[]
   aggregated_rating: number
   aggregated_rating_count: number
-  artworks: number[]
+  artworks: { height: number; id: number; url: string; width: number }[]
   category: GameCategory
   checksum: string
-  cover: number
+  cover: { id: number; url: string }
   created_at: number // UTC
-  dlcs: number[]
-  external_games: number[]
+  dlcs: { id: number; name: string }[]
+  external_games: { category: ExternalGameCategory; id: number; uid: string }[]
   first_release_date: number
-  game_engines: number[]
-  game_modes: number[]
-  genres: number[]
+  game_engines: { id: number; name: string; slug: string }[]
+  game_modes: { id: number; name: string; slug: string }[]
+  genres: { id: number; name: string; slug: string }[]
   hypes: number
   id: number
   involved_companies: number[]
-  keywords: number[]
+  keywords: { id: number; name: string; slug: string }[]
   name: string
   platforms: number[]
-  player_perspectives: number[]
+  player_perspectives: { id: number; name: string; slug: string }[]
   popularity: number
   pulse_count: number
   rating: number
   rating_count: number
-  release_dates: number[]
-  screenshots: number[]
-  similar_games: number[]
+  release_dates: {
+    date: number
+    id: number
+    platform: { id: number; name: string }
+    y: number
+  }[]
+  screenshots: { height: number; id: number; url: string; width: number }[]
+  similar_games: { id: number; name: string }[]
   slug: string
   storyline: string
   summary: string
   tags: number[]
-  themes: number[]
+  themes: { id: number; name: string; slug: string }[]
   total_rating: number
   total_rating_count: number
   updated_at: number
   url: string
-  videos: number[]
-  websites: number[]
+  videos: { id: number; name: string; video_id: string }[]
+  websites: { category: WebsiteCategory; id: number; url: string }[]
 }
 
-export const getGameInfo = async (apiUrl: string, games: string[] | number[]) =>
-  await fetchIDGBData<GameDataResponse[]>(apiUrl, Endpoint.Games, {
-    fields: '*',
-    where: `id = (${games.join(',')})`,
-  })
-
-type SteamIDLookupResponse = { game: number }[]
-
-export const getGameIdBySteamId = async (
+export const getGameInfoBySteamId = async (
   apiUrl: string,
   games: string[] | number[],
 ) =>
-  await fetchIDGBData<SteamIDLookupResponse>(apiUrl, Endpoint.ExternalGames, {
-    fields: 'game',
-    where: `category = ${ExternalGameCategory.Steam} & uid = (${games.join(
+  await fetchIDGBData<GameDataResponse[]>(apiUrl, Endpoint.Games, {
+    fields: `*,
+age_ratings.rating,age_ratings.rating_cover_url,
+artworks.url,artworks.width,artworks.height,
+dlcs.name,expansions.name,
+external_games.category,external_games.uid,
+cover.url,
+game_engines.name,game_engines.slug,
+game_modes.name,game_modes.slug,
+genres.name,genres.slug,
+keywords.name,keywords.slug,
+player_perspectives.name,player_perspectives.slug,
+multiplayer_modes.*,
+release_dates.date,release_dates.platform.name,release_dates.y,
+screenshots.url,screenshots.width,screenshots.height,
+similar_games.name,
+themes.name,themes.slug,
+time_to_beat.completely,time_to_beat.hastly,time_to_beat.normally,
+videos.name,videos.video_id,
+websites.url,websites.category`,
+    limit: 12,
+    where: `external_games.category = 1 & external_games.uid = (${games.join(
       ',',
     )})`,
   })
