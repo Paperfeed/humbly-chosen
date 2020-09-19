@@ -2,7 +2,9 @@ import Dexie from 'dexie'
 import fuzzysort from 'fuzzysort'
 
 import { database, SteamApp } from '../lib/db'
-import { getGameIdBySteamId, getGameInfo } from '../lib/igdb'
+import { Debug, Verbosity } from '../lib/debug'
+import { getGameInfoBySteamId } from '../lib/igdb'
+import { ExternalGameCategory } from '../lib/igdb-enums'
 import { requestFromSteam, SteamEndpoint } from '../lib/request'
 import { getAPIUrl } from '../lib/utilities'
 import { Choice, Content, ContentResponse } from '../messages/content-messages'
@@ -35,22 +37,40 @@ export async function findAppIdsByName(games: Choice[]) {
 
   const apiUrl = await getAPIUrl()
   const databaseResults = fuzzySorted.map(a => a && a.obj)
+  const steamIds = databaseResults
+    .filter(a => a !== undefined)
+    .map(a => a.appId)
+  const missingResults: Choice[] = []
+
+  const dataFromIGDB = await getGameInfoBySteamId(apiUrl, steamIds)
+
   const mergedResults = databaseResults
-    .map((a, i) => a && { ...a, machineName: games[i].machineName })
+    .map((a, i) => {
+      if (!a) missingResults.push(games[i])
+      return (
+        a && {
+          ...a,
+          machineName: games[i].machineName,
+        }
+      )
+    })
     .filter(a => a !== undefined)
 
-  const igdbIDs = await getGameIdBySteamId(
-    apiUrl,
-    databaseResults.map(a => a.appId),
-  )
-
-  const dataFromIGDB = await getGameInfo(
-    apiUrl,
-    igdbIDs.map(r => r.game),
-  )
+  if (missingResults.length) {
+    Debug.log(
+      Verbosity.INFO,
+      `Could not find data on ${missingResults.length} apps`,
+    )
+  }
 
   return mergedResults.map(app => ({
-    data: dataFromIGDB.find(d => d.name === app.name),
+    data: dataFromIGDB.find(d =>
+      d.external_games.some(
+        eg =>
+          eg.category === ExternalGameCategory.Steam &&
+          parseInt(eg.uid) === app.appId,
+      ),
+    ),
     ...app,
   }))
 }
